@@ -1,0 +1,225 @@
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local lp = Players.LocalPlayer
+local pgui = lp:WaitForChild("PlayerGui")
+
+if pgui:FindFirstChild("YBA_UltimateUI") then
+    pgui.YBA_UltimateUI:Destroy()
+end
+
+local sg = Instance.new("ScreenGui")
+sg.Name = "YBA_UltimateUI"
+sg.ResetOnSpawn = false
+sg.Parent = pgui
+
+-------------------------------------------------
+-- 상단 알림
+-------------------------------------------------
+local notice = Instance.new("TextLabel")
+notice.Size = UDim2.new(0.6, 0, 0, 36)
+notice.Position = UDim2.new(0.2, 0, -0.15, 0)
+notice.BackgroundColor3 = Color3.fromRGB(20,20,20)
+notice.BackgroundTransparency = 0.15
+notice.TextColor3 = Color3.fromRGB(255,255,255)
+notice.TextScaled = true
+notice.Font = Enum.Font.SourceSansBold
+notice.Text = "스킬 매핑은 쿨타임 종료 후 진행하십시오. 매핑을 할 때엔 반드시 그것에 알맞는 키를 2번씩 누르십시오."
+notice.BorderSizePixel = 0
+notice.Parent = sg
+
+TweenService:Create(
+    notice,
+    TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+    {Position = UDim2.new(0.2, 0, 0.02, 0)}
+):Play()
+
+task.delay(20, function()
+    TweenService:Create(
+        notice,
+        TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
+        {Position = UDim2.new(0.2, 0, -0.15, 0)}
+    ):Play()
+end)
+
+-------------------------------------------------
+-- 메인 프레임
+-------------------------------------------------
+local f = Instance.new("Frame")
+f.Size = UDim2.new(0, 320, 0, 500)
+f.Position = UDim2.new(0, 20, 0.2, 0)
+f.BackgroundColor3 = Color3.fromRGB(30,30,30)
+f.BackgroundTransparency = 0.5
+f.BorderSizePixel = 0
+f.Parent = sg
+
+local sn = Instance.new("TextLabel")
+sn.Size = UDim2.new(1, -20, 0, 30)
+sn.Position = UDim2.new(0, 10, 0, 10)
+sn.Text = "스탠드 소환 필요"
+sn.TextColor3 = Color3.fromRGB(255,255,0)
+sn.BackgroundTransparency = 1
+sn.TextScaled = true
+sn.Font = Enum.Font.SourceSansBold
+sn.Parent = f
+
+local infoLabel = Instance.new("TextLabel")
+infoLabel.Size = UDim2.new(1, -20, 0, 20)
+infoLabel.Position = UDim2.new(0, 10, 0, 45)
+infoLabel.BackgroundTransparency = 1
+infoLabel.TextColor3 = Color3.fromRGB(255,255,255)
+infoLabel.TextSize = 14
+infoLabel.TextXAlignment = Enum.TextXAlignment.Left
+infoLabel.Text = "스킬 매핑 대기 중"
+infoLabel.Parent = f
+
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(1, -20, 1, -120)
+scroll.Position = UDim2.new(0, 10, 0, 70)
+scroll.BackgroundTransparency = 1
+scroll.ScrollBarThickness = 8
+scroll.Parent = f
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 6)
+layout.Parent = scroll
+
+-------------------------------------------------
+-- 매핑 데이터
+-------------------------------------------------
+local standKeys = {
+    "E","R","T","Y","G","H",
+    "F",
+    "V","B","N","C","X","Z",
+    "U","J"
+}
+
+local skillMap = { F = "블락" }
+local mappingEnabled = false
+
+-------------------------------------------------
+-- HUD 감지 (오른쪽 하단)
+-------------------------------------------------
+local function getBottomRightSkillFromHUD()
+    local hud = pgui:FindFirstChild("HUD")
+    if not hud then return nil end
+
+    local cam = workspace.CurrentCamera
+    local vw, vh = cam.ViewportSize.X, cam.ViewportSize.Y
+    local target
+
+    for _, t in ipairs(hud:GetDescendants()) do
+        if t:IsA("TextLabel") and t.Visible and t.Text ~= "" then
+            local p = t.AbsolutePosition
+            if p.X > vw/2 and p.Y > vh/2 then
+                if not target or p.Y > target.AbsolutePosition.Y then
+                    target = t
+                end
+            end
+        end
+    end
+
+    return target
+end
+
+-------------------------------------------------
+-- UI 갱신
+-------------------------------------------------
+local function updateKeyUI()
+    for _, c in ipairs(scroll:GetChildren()) do
+        if c:IsA("TextLabel") then
+            c:Destroy()
+        end
+    end
+
+    task.wait()
+
+    for i, key in ipairs(standKeys) do
+        local lbl = Instance.new("TextLabel")
+        lbl.Size = UDim2.new(1, 0, 0, 24)
+        lbl.BackgroundTransparency = 1
+        lbl.TextSize = 14
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+
+        if key == "F" then
+            lbl.Text = "[F] - 블락"
+            lbl.TextColor3 = Color3.fromRGB(200,200,200)
+        else
+            lbl.Text = "["..key.."] - " .. (skillMap[key] or "미등록")
+            lbl.TextColor3 = skillMap[key]
+                and Color3.fromRGB(255,255,255)
+                or Color3.fromRGB(180,180,180)
+        end
+
+        lbl.LayoutOrder = i
+        lbl.Parent = scroll
+    end
+
+    task.wait()
+    scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y)
+end
+
+-------------------------------------------------
+-- 키 입력
+-------------------------------------------------
+UIS.InputBegan:Connect(function(input, gpe)
+    if gpe or not mappingEnabled then return end
+    if input.UserInputType ~= Enum.UserInputType.Keyboard then return end
+
+    local key = input.KeyCode.Name
+    if not table.find(standKeys, key) then return end
+    if key == "F" then return end
+
+    task.delay(0.5, function()
+        local lbl = getBottomRightSkillFromHUD()
+        if lbl then
+            skillMap[key] = lbl.Text
+            updateKeyUI()
+        end
+    end)
+end)
+
+-------------------------------------------------
+-- 버튼
+-------------------------------------------------
+local resetBtn = Instance.new("TextButton")
+resetBtn.Size = UDim2.new(0,280,0,26)
+resetBtn.Position = UDim2.new(0,10,1,-70)
+resetBtn.BackgroundColor3 = Color3.fromRGB(120,120,120)
+resetBtn.TextColor3 = Color3.fromRGB(255,255,255)
+resetBtn.Text = "매핑 초기화"
+resetBtn.Parent = f
+
+resetBtn.MouseButton1Click:Connect(function()
+    skillMap = { F = "블락" }
+    infoLabel.Text = "매핑 초기화 완료"
+    updateKeyUI()
+end)
+
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0,280,0,28)
+toggleBtn.Position = UDim2.new(0,10,1,-36)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(50,150,50)
+toggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
+toggleBtn.Text = "스킬 매핑 시작"
+toggleBtn.Parent = f
+
+toggleBtn.MouseButton1Click:Connect(function()
+    mappingEnabled = not mappingEnabled
+
+    if mappingEnabled then
+        toggleBtn.Text = "스킬 매핑 정지"
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(170,70,70)
+        infoLabel.Text = "키를 눌러 스킬 사용"
+    else
+        toggleBtn.Text = "스킬 매핑 시작"
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(50,150,50)
+        infoLabel.Text = "스킬 매핑 정지됨"
+    end
+end)
+
+-------------------------------------------------
+-- 초기 실행
+-------------------------------------------------
+updateKeyUI()
