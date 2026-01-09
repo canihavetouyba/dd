@@ -25,7 +25,7 @@ notice.BackgroundTransparency = 0.15
 notice.TextColor3 = Color3.fromRGB(255,255,255)
 notice.TextScaled = true
 notice.Font = Enum.Font.SourceSansBold
-notice.Text = "스킬 매핑은 쿨타임 종료 후 진행하십시오. 매핑을 할 때엔 반드시 그것에 알맞는 키를 2번씩 누르십시오."
+notice.Text = "Skill mapping should be done after the cooldown has ended. When mapping, always press the appropriate key twice."
 notice.BorderSizePixel = 0
 notice.Parent = sg
 
@@ -57,7 +57,7 @@ f.Parent = sg
 local sn = Instance.new("TextLabel")
 sn.Size = UDim2.new(1, -20, 0, 30)
 sn.Position = UDim2.new(0, 10, 0, 10)
-sn.Text = "스탠드 소환 필요"
+sn.Text = "Stand Ability Key"
 sn.TextColor3 = Color3.fromRGB(255,255,0)
 sn.BackgroundTransparency = 1
 sn.TextScaled = true
@@ -71,7 +71,7 @@ infoLabel.BackgroundTransparency = 1
 infoLabel.TextColor3 = Color3.fromRGB(255,255,255)
 infoLabel.TextSize = 14
 infoLabel.TextXAlignment = Enum.TextXAlignment.Left
-infoLabel.Text = "스킬 매핑 대기 중"
+infoLabel.Text = "Waiting Skill Mapping"
 infoLabel.Parent = f
 
 local scroll = Instance.new("ScrollingFrame")
@@ -95,7 +95,7 @@ local standKeys = {
     "U","J"
 }
 
-local skillMap = { F = "블락" }
+local skillMap = { F = "Block" }
 local mappingEnabled = false
 
 -------------------------------------------------
@@ -143,10 +143,10 @@ local function updateKeyUI()
         lbl.TextXAlignment = Enum.TextXAlignment.Left
 
         if key == "F" then
-            lbl.Text = "[F] - 블락"
+            lbl.Text = "[F] - Block"
             lbl.TextColor3 = Color3.fromRGB(200,200,200)
         else
-            lbl.Text = "["..key.."] - " .. (skillMap[key] or "미등록")
+            lbl.Text = "["..key.."] - " .. (skillMap[key] or "Not Registered")
             lbl.TextColor3 = skillMap[key]
                 and Color3.fromRGB(255,255,255)
                 or Color3.fromRGB(180,180,180)
@@ -188,12 +188,12 @@ resetBtn.Size = UDim2.new(0,280,0,26)
 resetBtn.Position = UDim2.new(0,10,1,-70)
 resetBtn.BackgroundColor3 = Color3.fromRGB(120,120,120)
 resetBtn.TextColor3 = Color3.fromRGB(255,255,255)
-resetBtn.Text = "매핑 초기화"
+resetBtn.Text = "Mapping Initialization"
 resetBtn.Parent = f
 
 resetBtn.MouseButton1Click:Connect(function()
-    skillMap = { F = "블락" }
-    infoLabel.Text = "매핑 초기화 완료"
+    skillMap = { F = "Block" }
+    infoLabel.Text = "Mapping Initialization Complete"
     updateKeyUI()
 end)
 
@@ -202,20 +202,20 @@ toggleBtn.Size = UDim2.new(0,280,0,28)
 toggleBtn.Position = UDim2.new(0,10,1,-36)
 toggleBtn.BackgroundColor3 = Color3.fromRGB(50,150,50)
 toggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
-toggleBtn.Text = "스킬 매핑 시작"
+toggleBtn.Text = "Skill Mapping Start"
 toggleBtn.Parent = f
 
 toggleBtn.MouseButton1Click:Connect(function()
     mappingEnabled = not mappingEnabled
 
     if mappingEnabled then
-        toggleBtn.Text = "스킬 매핑 정지"
+        toggleBtn.Text = "Skill Mapping Stop"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(170,70,70)
-        infoLabel.Text = "키를 눌러 스킬 사용"
+        infoLabel.Text = "key to Mapping"
     else
-        toggleBtn.Text = "스킬 매핑 시작"
+        toggleBtn.Text = "Skill Mapping Start"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(50,150,50)
-        infoLabel.Text = "스킬 매핑 정지됨"
+        infoLabel.Text = "Skill Mapping Stop"
     end
 end)
 
