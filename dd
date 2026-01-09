@@ -25,7 +25,7 @@ notice.BackgroundTransparency = 0.15
 notice.TextColor3 = Color3.fromRGB(255,255,255)
 notice.TextScaled = true
 notice.Font = Enum.Font.SourceSansBold
-notice.Text = "Skill mapping should be done after the cooldown has ended. When mapping, always press the appropriate key twice."
+notice.Text = "Skill mapping should be done after other cooldowns are finished. When mapping, always press the key twice, but if the appropriate cooldown comes up, press it once more."
 notice.BorderSizePixel = 0
 notice.Parent = sg
 
