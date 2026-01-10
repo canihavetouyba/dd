@@ -15,36 +15,47 @@ sg.ResetOnSpawn = false
 sg.Parent = pgui
 
 -------------------------------------------------
--- 상단 알림
+-- 상단 알림 (네온 파란색, 테두리 진하게)
 -------------------------------------------------
 local notice = Instance.new("TextLabel")
-notice.Size = UDim2.new(0.6, 0, 0, 36)
-notice.Position = UDim2.new(0.2, 0, -0.15, 0)
-notice.BackgroundColor3 = Color3.fromRGB(20,20,20)
-notice.BackgroundTransparency = 0.15
-notice.TextColor3 = Color3.fromRGB(255,255,255)
+notice.Size = UDim2.new(0.75, 0, 0, 90)
+notice.Position = UDim2.new(0.125, 0, -0.25, 0)
+notice.BackgroundColor3 = Color3.fromRGB(10, 15, 30)
+notice.BackgroundTransparency = 0.05
+notice.TextColor3 = Color3.fromRGB(130, 190, 255)
+notice.TextWrapped = true
 notice.TextScaled = true
 notice.Font = Enum.Font.SourceSansBold
-notice.Text = "Skill mapping should be done after other cooldowns are finished. When mapping, always press the key twice, but if the appropriate cooldown comes up, press it once more."
 notice.BorderSizePixel = 0
+notice.Text =
+    "INFORMATION\n" ..
+    "All keys must be mapped after their individual cooldowns finish.\n" ..
+    "Press the key once to use the skill, then press it again when its correct cooldown appears.\n" ..
+    "The E key may show incorrect data on the first attempt."
 notice.Parent = sg
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(30, 80, 150) -- 진한 파란색
+stroke.Thickness = 1.2
+stroke.Transparency = 0 -- 완전 선명
+stroke.Parent = notice
 
 TweenService:Create(
     notice,
-    TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-    {Position = UDim2.new(0.2, 0, 0.02, 0)}
+    TweenInfo.new(0.7, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+    {Position = UDim2.new(0.125, 0, 0.02, 0)}
 ):Play()
 
-task.delay(20, function()
+task.delay(22, function()
     TweenService:Create(
         notice,
-        TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
-        {Position = UDim2.new(0.2, 0, -0.15, 0)}
+        TweenInfo.new(0.7, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
+        {Position = UDim2.new(0.125, 0, -0.25, 0)}
     ):Play()
 end)
 
 -------------------------------------------------
--- 메인 프레임
+-- 메인 프레임 (드래그 가능)
 -------------------------------------------------
 local f = Instance.new("Frame")
 f.Size = UDim2.new(0, 320, 0, 500)
@@ -54,6 +65,39 @@ f.BackgroundTransparency = 0.5
 f.BorderSizePixel = 0
 f.Parent = sg
 
+-- 드래그 변수
+local dragging = false
+local dragInput, dragStart, startPos
+
+f.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = f.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+f.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        f.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-------------------------------------------------
+-- 타이틀
+-------------------------------------------------
 local sn = Instance.new("TextLabel")
 sn.Size = UDim2.new(1, -20, 0, 30)
 sn.Position = UDim2.new(0, 10, 0, 10)
@@ -211,11 +255,11 @@ toggleBtn.MouseButton1Click:Connect(function()
     if mappingEnabled then
         toggleBtn.Text = "Skill Mapping Stop"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(170,70,70)
-        infoLabel.Text = "key to Mapping"
+        infoLabel.Text = "Press the key to map the skill"
     else
         toggleBtn.Text = "Skill Mapping Start"
         toggleBtn.BackgroundColor3 = Color3.fromRGB(50,150,50)
-        infoLabel.Text = "Skill Mapping Stop"
+        infoLabel.Text = "Skill Mapping Stopped"
     end
 end)
 
